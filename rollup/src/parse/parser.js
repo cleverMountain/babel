@@ -1,19 +1,48 @@
 import getOptions from "./options";
+import { StatementParser, ScopeHandler } from "./classChain"
 
+function pluginsMap(plugins) {
+  // plugins的映射
+  const pluginMap = new Map();
+  for (const plugin of plugins) {
+    const [name, options] = Array.isArray(plugin) ? plugin : [plugin, {}];
+    if (!pluginMap.has(name)) pluginMap.set(name, options || {});
+  }
+  return pluginMap;
+}
 class Parser extends StatementParser {
   constructor(options, input) {
     // 获取解析选项, 这里是defaultOptions
     options = getOptions(options);
-    console.log(options, 'before')
-    // 将defaultOptions及input传入
+    // 修改options，并获得一些其它属性，init(options)
+    /**
+     * 通过super继承Tokenizer令牌添加解析器属性
+     * tokens: []
+     * state:{}
+     * input
+     * length
+     * isLookahead
+     * 来自baseParser
+     * ambiguousScriptDifferentAst
+     * sawUnambiguousESM
+     */
     super(options, input);
-    console.log(options, 'after')
     this.options = options;
-    // 初始化作用域
+    // 初始化作用域调用UtilParser的initializeScopes方法
+    /**
+     * 添加解析器其它属性
+     * classScope
+     * exportedIdentifiers
+     * inModule
+     * scope
+     * prodParam
+     * classScope
+     * expressionScope
+     */
     this.initializeScopes();
     // 插件
     this.plugins = pluginsMap(this.options.plugins);
-    this.filename = options.sourceFilename;
+    this.filename = options.sourceFilename; // 原文件名
   }
   getScopeHandler() {
     return ScopeHandler;

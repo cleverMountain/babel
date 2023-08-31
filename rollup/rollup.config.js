@@ -3,6 +3,7 @@ export default {
   output: {
     file: 'dist/bundle.js',
     format: 'umd',
-    name: 'babel'
+    name: 'babel',
+    sourcemap: true
   }
 };
