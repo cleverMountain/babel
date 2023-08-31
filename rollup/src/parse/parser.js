@@ -60,7 +60,7 @@ class Parser extends StatementParser {
     console.log(file)
     const program = this.startNode();
     console.log(file)
-    debugger
+
     // Tokenizer
     this.nextToken();
     // file.errors = null;

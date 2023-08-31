@@ -665,6 +665,7 @@ function isWhitespace(code) {
       return false;
   }
 }
+const keywords$1 = new Map();
 class Tokenizer extends CommentsParser {
   constructor(options, input) {
 
@@ -821,14 +822,26 @@ class Tokenizer extends CommentsParser {
   }
   nextToken() {
     // mark4
-    this.skipSpace();
+    console.log(this)
+    this.skipSpace(); // 判断解析开始有没有空格或者换行符，
     this.state.start = this.state.pos;
-    if (!this.isLookahead) this.state.startLoc = this.state.curPosition();
+    if (!this.isLookahead) {
+      /**
+       * 记录开始位置
+       * line
+       * index
+       * column
+       */
+      this.state.startLoc = this.state.curPosition()
+    };
     if (this.state.pos >= this.length) {
       this.finishToken(137);
       return;
     }
-    this.getTokenFromCode(this.codePointAtPos(this.state.pos));
+    // 获取当前位置的code码
+    let code = this.codePointAtPos(this.state.pos)
+    debugger
+    this.getTokenFromCode(code);
   }
   skipBlockComment(commentEnd) {
     let startLoc;
@@ -946,11 +959,13 @@ class Tokenizer extends CommentsParser {
           }
           break;
         default:
-          // 正常代码
+          // 正常代码，空格直接跳过
           if (isWhitespace(ch)) {
             ++this.state.pos;
           } else if (ch === 45 && !this.inModule && this.options.annexB) {
+            // -
             const pos = this.state.pos;
+            // 注释
             if (this.input.charCodeAt(pos + 1) === 45 && this.input.charCodeAt(pos + 2) === 62 && (spaceStart === 0 || this.state.lineStart > spaceStart)) {
               const comment = this.skipLineComment(3);
               if (comment !== undefined) {
@@ -963,6 +978,7 @@ class Tokenizer extends CommentsParser {
           } else if (ch === 60 && !this.inModule && this.options.annexB) {
             const pos = this.state.pos;
             if (this.input.charCodeAt(pos + 1) === 33 && this.input.charCodeAt(pos + 2) === 45 && this.input.charCodeAt(pos + 3) === 45) {
+              debugger
               const comment = this.skipLineComment(4);
               if (comment !== undefined) {
                 this.addComment(comment);
@@ -1704,6 +1720,7 @@ class Tokenizer extends CommentsParser {
     if (type !== undefined) {
       this.finishToken(type, tokenLabelName(type));
     } else {
+      debugger
       this.finishToken(130, word);
     }
   }
@@ -1783,6 +1800,29 @@ class Tokenizer extends CommentsParser {
       });
     };
   }
+}
+// 检查给定字符 code 是否可以作为标识符的起始字符的函数
+function isIdentifierStart(code) {
+  if (code < 65) return code === 36;
+  if (code <= 90) return true;
+  if (code < 97) return code === 95;
+  if (code <= 122) return true;
+  if (code <= 0xffff) {
+    return code >= 0xaa && nonASCIIidentifierStart.test(String.fromCharCode(code));
+  }
+  return isInAstralSet(code, astralIdentifierStartCodes);
+}
+function isIdentifierChar(code) {
+  if (code < 48) return code === 36;
+  if (code < 58) return true;
+  if (code < 65) return false;
+  if (code <= 90) return true;
+  if (code < 97) return code === 95;
+  if (code <= 122) return true;
+  if (code <= 0xffff) {
+    return code >= 0xaa && nonASCIIidentifier.test(String.fromCharCode(code));
+  }
+  return isInAstralSet(code, astralIdentifierStartCodes) || isInAstralSet(code, astralIdentifierCodes);
 }
 class UtilParser extends Tokenizer {
   addExtra(node, key, value, enumerable = true) {
