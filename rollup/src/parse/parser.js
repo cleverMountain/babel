@@ -1,3 +1,4 @@
+// @ts-nocheck
 import getOptions from "./options";
 import { StatementParser, ScopeHandler } from "./classChain"
 
@@ -48,15 +49,24 @@ class Parser extends StatementParser {
     return ScopeHandler;
   }
   parse() {
-    // 进入初始化作用域
+    /**
+     * 继承自UtilParser，进入初始化作用域，作用
+     * 1.prodParam.stacks.push(PARAM)
+     * 2.scope.scopedStack.push(Scope)
+     */
     this.enterInitialScopes();
+    // Node节点与构造函数Node有关
     const file = this.startNode();
+    console.log(file)
     const program = this.startNode();
+    console.log(file)
+    debugger
+    // Tokenizer
     this.nextToken();
-    file.errors = null;
-    this.parseTopLevel(file, program);
-    file.errors = this.state.errors;
-    return file;
+    // file.errors = null;
+    // this.parseTopLevel(file, program);
+    // file.errors = this.state.errors;
+    // return file;
   }
 }
 

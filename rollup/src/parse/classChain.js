@@ -1,3 +1,18 @@
+// @ts-nocheck
+class Scope {
+  constructor(flags) {
+    this.var = new Set();
+    // lexical 词法
+    this.lexical = new Set();
+    this.functions = new Set();
+    this.flags = flags;
+  }
+}
+const PARAM = 0b0000,  // 0b代表二进制  0000 表示0,我们用的都是10进制
+  PARAM_YIELD = 0b0001, // 1
+  PARAM_AWAIT = 0b0010, // 2
+  PARAM_RETURN = 0b0100, // 4
+  PARAM_IN = 0b1000; // 8
 class ExpressionScope {
   constructor(type = 0) {
     this.type = type;
@@ -247,9 +262,10 @@ class ScopeHandler {
     return this.treatFunctionsAsVarInScope(this.currentScope());
   }
   createScope(flags) {
+    // 获取scoped
     return new Scope(flags);
   }
-  // 作用域处理
+  // 作用域处理mark2
   enter(flags) {
     /**
      * createScope
@@ -258,6 +274,7 @@ class ScopeHandler {
      * lexical: Set(0) {size: 0}
      * var: Set(0) {size: 0}
      */
+    // 压入scoped
     this.scopeStack.push(this.createScope(flags));
   }
   exit() {
@@ -619,6 +636,35 @@ class CommentsParser extends BaseParser {
     }
   }
 }
+// mark4 是否是空白符
+function isWhitespace(code) {
+  switch (code) {
+    case 0x0009:
+    case 0x000b:
+    case 0x000c:
+    case 32:
+    case 160:
+    case 5760:
+    case 0x2000:
+    case 0x2001:
+    case 0x2002:
+    case 0x2003:
+    case 0x2004:
+    case 0x2005:
+    case 0x2006:
+    case 0x2007:
+    case 0x2008:
+    case 0x2009:
+    case 0x200a:
+    case 0x202f:
+    case 0x205f:
+    case 0x3000:
+    case 0xfeff:
+      return true;
+    default:
+      return false;
+  }
+}
 class Tokenizer extends CommentsParser {
   constructor(options, input) {
 
@@ -774,6 +820,7 @@ class Tokenizer extends CommentsParser {
     return this.state.context[this.state.context.length - 1];
   }
   nextToken() {
+    // mark4
     this.skipSpace();
     this.state.start = this.state.pos;
     if (!this.isLookahead) this.state.startLoc = this.state.curPosition();
@@ -833,28 +880,47 @@ class Tokenizer extends CommentsParser {
     if (this.options.tokens) this.pushToken(comment);
     return comment;
   }
+  
+  // 跳过空格
   skipSpace() {
     const spaceStart = this.state.pos;
     const comments = [];
+    // charCodeAt 0-65535整数
     loop: while (this.state.pos < this.length) {
       const ch = this.input.charCodeAt(this.state.pos);
       switch (ch) {
+        /**
+         * 160 " "
+         * 32 ""
+         * 9 水平制表符号 \t
+         * 直接跳过
+         */
         case 32:
         case 160:
         case 9:
           ++this.state.pos;
           break;
         case 13:
+          // 回车符和换行符（Carriage Return + Line Feed）
           if (this.input.charCodeAt(this.state.pos + 1) === 10) {
             ++this.state.pos;
           }
+        /**
+         * 10 换行符（Line Feed）
+         * 8232 行分隔符（Line Separator）
+         * 8233 段落分隔符（Paragraph Separator）
+         */
         case 10:
         case 8232:
         case 8233:
           ++this.state.pos;
-          ++this.state.curLine;
+          ++this.state.curLine; // 加一行
           this.state.lineStart = this.state.pos;
           break;
+          /**
+           * 47，它对应的字符是正斜杠（Slash），一般用于表示路径或者分隔符
+           * 42，它对应的字符是星号（Asterisk），常用于表示通配符或者乘法运算中的乘号
+           */
         case 47:
           switch (this.input.charCodeAt(this.state.pos + 1)) {
             case 42:
@@ -880,6 +946,7 @@ class Tokenizer extends CommentsParser {
           }
           break;
         default:
+          // 正常代码
           if (isWhitespace(ch)) {
             ++this.state.pos;
           } else if (ch === 45 && !this.inModule && this.options.annexB) {
@@ -1895,11 +1962,12 @@ class UtilParser extends Tokenizer {
     const oldInModule = this.inModule;
     this.inModule = inModule;
     const oldScope = this.scope;
+    // ScopeHandler类处理各种scoped
     const ScopeHandler = this.getScopeHandler();
-    //  定义scoped
+    //  定义scoped处理作用域
     this.scope = new ScopeHandler(this, inModule);
     const oldProdParam = this.prodParam;
-    // 程序体stack
+    // 处理函数
     this.prodParam = new ProductionParameterHandler();
     const oldClassScope = this.classScope;
     // 处理类的程序体
@@ -1920,11 +1988,16 @@ class UtilParser extends Tokenizer {
   enterInitialScopes() {
     let paramFlags = PARAM;
     // is in ES Moduless是否在Esmodules中
+ 
     if (this.inModule) {
       paramFlags |= PARAM_AWAIT;
     }
     // 进入新的作用域如函数
+    // mark1
+    console.log(this)
+    // scope.scopeStack=[]添加Scope => [Scoped]
     this.scope.enter(1);
+    // prodParam.stacks=[]添加paramFlags => [0]
     this.prodParam.enter(paramFlags);
   }
   checkDestructuringPrivate(refExpressionErrors) {
@@ -1936,7 +2009,26 @@ class UtilParser extends Tokenizer {
     }
   }
 }
-
+class SourceLocation {
+  constructor(start, end) {
+    this.start = void 0;
+    this.end = void 0;
+    this.filename = void 0;
+    this.identifierName = void 0;
+    this.start = start;
+    this.end = end;
+  }
+}
+class Node {
+  constructor(parser, pos, loc) {
+    this.type = "";
+    this.start = pos;
+    this.end = 0;
+    this.loc = new SourceLocation(loc);
+    if (parser != null && parser.options.ranges) this.range = [pos, 0];
+    if (parser != null && parser.filename) this.loc.filename = parser.filename;
+  }
+}
 // node工具
 class NodeUtils extends UtilParser {
   startNode() {
