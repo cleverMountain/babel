@@ -57,14 +57,12 @@ class Parser extends StatementParser {
     this.enterInitialScopes();
     // Node节点与构造函数Node有关
     const file = this.startNode();
-    console.log(file)
     const program = this.startNode();
     console.log(file)
-
     // Tokenizer
     this.nextToken();
-    // file.errors = null;
-    // this.parseTopLevel(file, program);
+    file.errors = null;
+    this.parseTopLevel(file, program);
     // file.errors = this.state.errors;
     // return file;
   }

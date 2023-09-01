@@ -1,4 +1,12 @@
 // @ts-nocheck
+class ExpressionErrors {
+  constructor() {
+    this.shorthandAssignLoc = null;
+    this.doubleProtoLoc = null;
+    this.privateKeyLoc = null;
+    this.optionalParametersLoc = null;
+  }
+}
 class Scope {
   constructor(flags) {
     this.var = new Set();
@@ -840,7 +848,7 @@ class Tokenizer extends CommentsParser {
     }
     // 获取当前位置的code码
     let code = this.codePointAtPos(this.state.pos)
-    debugger
+    // 获取第一个码位
     this.getTokenFromCode(code);
   }
   skipBlockComment(commentEnd) {
@@ -1679,6 +1687,7 @@ class Tokenizer extends CommentsParser {
     const start = this.state.pos;
     let chunkStart = this.state.pos;
     if (firstCode !== undefined) {
+      // 是否是合格的unicode码
       this.state.pos += firstCode <= 0xffff ? 1 : 2;
     }
     while (this.state.pos < this.length) {
@@ -1715,12 +1724,12 @@ class Tokenizer extends CommentsParser {
     return word + this.input.slice(chunkStart, this.state.pos);
   }
   readWord(firstCode) {
+    // 获取第一个声明字符串
     const word = this.readWord1(firstCode);
     const type = keywords$1.get(word);
     if (type !== undefined) {
       this.finishToken(type, tokenLabelName(type));
     } else {
-      debugger
       this.finishToken(130, word);
     }
   }
@@ -1801,7 +1810,8 @@ class Tokenizer extends CommentsParser {
     };
   }
 }
-// 检查给定字符 code 是否可以作为标识符的起始字符的函数
+// 检查给定字符 code 是否可以作为标识符的起始字符的函数,是否可以作为起始符
+// a-z,A-Z,_
 function isIdentifierStart(code) {
   if (code < 65) return code === 36;
   if (code <= 90) return true;
@@ -1812,6 +1822,7 @@ function isIdentifierStart(code) {
   }
   return isInAstralSet(code, astralIdentifierStartCodes);
 }
+// 是否是标识符a-z、A-Z）、（0-9）、（$）（_）
 function isIdentifierChar(code) {
   if (code < 48) return code === 36;
   if (code < 58) return true;
@@ -4309,6 +4320,7 @@ class ExpressionParser extends LValParser {
 // 语法分析
 class StatementParser extends ExpressionParser {
   parseTopLevel(file, program) {
+    debugger
     file.program = this.parseProgram(program);
     file.comments = this.state.comments;
     if (this.options.tokens) {
@@ -4318,6 +4330,7 @@ class StatementParser extends ExpressionParser {
   }
   parseProgram(program, end = 137, sourceType = this.options.sourceType) {
     program.sourceType = sourceType;
+    // 解析器指令以#!开头
     program.interpreter = this.parseInterpreterDirective();
     this.parseBlockBody(program, true, true, end);
     if (this.inModule && !this.options.allowUndeclaredExports && this.scope.undefinedExports.size > 0) {
@@ -5043,6 +5056,7 @@ class StatementParser extends ExpressionParser {
     const oldStrict = this.state.strict;
     let hasStrictModeDirective = false;
     let parsedNonDirective = false;
+    debugger
     while (!this.match(end)) {
       const stmt = topLevel ? this.parseModuleItem() : this.parseStatementListItem();
       if (directives && !parsedNonDirective) {
