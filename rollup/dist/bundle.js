@@ -41,6 +41,13 @@
   }
 
   // @ts-nocheck
+  const tokenPrefixes = [];
+  function tokenIsIdentifier(token) {
+    return token >= 93 && token <= 130;
+  }
+  function tokenIsPrefix(token) {
+    return tokenPrefixes[token];
+  }
   class ExpressionErrors {
     constructor() {
       this.shorthandAssignLoc = null;
@@ -1027,7 +1034,6 @@
             } else if (ch === 60 && !this.inModule && this.options.annexB) {
               const pos = this.state.pos;
               if (this.input.charCodeAt(pos + 1) === 33 && this.input.charCodeAt(pos + 2) === 45 && this.input.charCodeAt(pos + 3) === 45) {
-                debugger
                 const comment = this.skipLineComment(4);
                 if (comment !== undefined) {
                   this.addComment(comment);
@@ -2605,7 +2611,11 @@
       if (disallowIn) {
         return this.disallowInAnd(() => this.parseExpressionBase(refExpressionErrors));
       }
-      return this.allowInAnd(() => this.parseExpressionBase(refExpressionErrors));
+      const refExpression = this.parseExpressionBase(refExpressionErrors);
+      const cb = () => refExpression;
+      const res = this.allowInAnd(cb);
+      // return this.allowInAnd(() => this.parseExpressionBase(refExpressionErrors));
+      return res
     }
     parseExpressionBase(refExpressionErrors) {
       const startLoc = this.state.startLoc;
@@ -2642,6 +2652,7 @@
           return left;
         }
       }
+      // 获取错误表达式
       let ownExpressionErrors;
       if (refExpressionErrors) {
         ownExpressionErrors = false;
@@ -2712,7 +2723,8 @@
       return expr;
     }
     parseMaybeUnaryOrPrivate(refExpressionErrors) {
-      return this.match(136) ? this.parsePrivateName() : this.parseMaybeUnary(refExpressionErrors);
+      let status = this.match(136);
+      return status ? this.parsePrivateName() : this.parseMaybeUnary(refExpressionErrors);
     }
     parseExprOps(refExpressionErrors) {
       const startLoc = this.state.startLoc;
@@ -2835,6 +2847,7 @@
       }
     }
     parseMaybeUnary(refExpressionErrors, sawUnary) {
+
       const startLoc = this.state.startLoc;
       const isAwait = this.isContextual(96);
       if (isAwait && this.isAwaitAllowed()) {
@@ -2845,7 +2858,9 @@
       }
       const update = this.match(34);
       const node = this.startNode();
+      debugger
       if (tokenIsPrefix(this.state.type)) {
+    
         node.operator = this.state.value;
         node.prefix = true;
         if (this.match(72)) {
@@ -2874,6 +2889,7 @@
           return this.finishNode(node, "UnaryExpression");
         }
       }
+      debugger
       const expr = this.parseUpdate(node, update, refExpressionErrors);
       if (isAwait) {
         const {
@@ -4358,10 +4374,11 @@
     }
     parsePropertyNamePrefixOperator(prop) {}
   }
+
   // 语法分析
   class StatementParser extends ExpressionParser {
     parseTopLevel(file, program) {
-      debugger
+
       file.program = this.parseProgram(program);
       file.comments = this.state.comments;
       if (this.options.tokens) {
@@ -4373,6 +4390,7 @@
       program.sourceType = sourceType;
       // 解析器指令以#!开头
       program.interpreter = this.parseInterpreterDirective();
+      // node, allowDirectives(自定义指令), topLevel, end(结束位置)
       this.parseBlockBody(program, true, true, end);
       if (this.inModule && !this.options.allowUndeclaredExports && this.scope.undefinedExports.size > 0) {
         for (const [localName, at] of Array.from(this.scope.undefinedExports)) {
@@ -4501,6 +4519,7 @@
     }
     parseStatementContent(flags, decorators) {
       const starttype = this.state.type;
+      // 新node
       const node = this.startNode();
       const allowDeclaration = !!(flags & 2);
       const allowFunctionDeclaration = !!(flags & 4);
@@ -4633,8 +4652,11 @@
             return result;
           }
         default:
+          // 130
           {
+            // 是否是同步函数
             if (this.isAsyncFunction()) {
+              debugger
               if (!allowDeclaration) {
                 this.raise(Errors.AsyncFunctionInSingleStatementContext, {
                   at: this.state.startLoc
@@ -4645,7 +4667,9 @@
             }
           }
       }
+
       const maybeName = this.state.value;
+      // 获取表达式
       const expr = this.parseExpression();
       if (tokenIsIdentifier(starttype) && expr.type === "Identifier" && this.eat(14)) {
         return this.parseLabeledStatement(node, maybeName, expr, flags);
@@ -5089,15 +5113,19 @@
       return stmt.type === "ExpressionStatement" && stmt.expression.type === "StringLiteral" && !stmt.expression.extra.parenthesized;
     }
     parseBlockBody(node, allowDirectives, topLevel, end, afterBlockParse) {
+      // 给node添加body属性及directives属性
       const body = node.body = [];
       const directives = node.directives = [];
+      // 解析module块，后续处理body和directives添加
       this.parseBlockOrModuleBlockBody(body, allowDirectives ? directives : undefined, topLevel, end, afterBlockParse);
     }
+    // 
     parseBlockOrModuleBlockBody(body, directives, topLevel, end, afterBlockParse) {
       const oldStrict = this.state.strict;
       let hasStrictModeDirective = false;
       let parsedNonDirective = false;
-      debugger
+
+      // 是否是结束type
       while (!this.match(end)) {
         const stmt = topLevel ? this.parseModuleItem() : this.parseStatementListItem();
         if (directives && !parsedNonDirective) {
@@ -6302,7 +6330,7 @@
       const file = this.startNode();
       const program = this.startNode();
       console.log(file);
-      // Tokenizer
+      // Tokenizer拿到了第一个字符
       this.nextToken();
       file.errors = null;
       this.parseTopLevel(file, program);

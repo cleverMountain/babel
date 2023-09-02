@@ -59,7 +59,7 @@ class Parser extends StatementParser {
     const file = this.startNode();
     const program = this.startNode();
     console.log(file)
-    // Tokenizer
+    // Tokenizer拿到了第一个字符
     this.nextToken();
     file.errors = null;
     this.parseTopLevel(file, program);
