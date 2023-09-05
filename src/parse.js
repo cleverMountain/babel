@@ -62,6 +62,9 @@ const instantiate = (constructor, properties, descriptors) => Object.keys(descri
 } : typeof descriptor.reflect === "string" ? Object.assign({}, descriptor, reflect(descriptor.reflect.split("."))) : descriptor]).reduce((instance, [key, descriptor]) => Object.defineProperty(instance, key, Object.assign({
   configurable: true
 }, descriptor)), Object.assign(new constructor(), properties));
+
+
+
 var ModuleErrors = {
   ImportMetaOutsideModule: {
     message: `import.meta may appear only with 'sourceType: "module"'`,
