@@ -41,12 +41,414 @@
   }
 
   // @ts-nocheck
+  const reservedWords = {
+    keyword: ["break", "case", "catch", "continue", "debugger", "default", "do", "else", "finally", "for", "function", "if", "return", "switch", "throw", "try", "var", "const", "while", "with", "new", "this", "super", "class", "extends", "export", "import", "null", "true", "false", "in", "instanceof", "typeof", "void", "delete"],
+    strict: ["implements", "interface", "let", "package", "private", "protected", "public", "static", "yield"],
+    strictBind: ["eval", "arguments"]
+  };
+  var reflect = (keys, last = keys.length - 1) => ({
+    get() {
+      return keys.reduce((object, key) => object[key], this);
+    },
+    set(value) {
+      keys.reduce((item, key, i) => i === last ? item[key] = value : item[key], this);
+    }
+  });
+  const instantiate = 
+  (constructor, properties, descriptors) => Object.keys(descriptors).map(key => [key, descriptors[key]]).filter(([, descriptor]) => !!descriptor).map(([key, descriptor]) => [key, typeof descriptor === "function" ? {
+    value: descriptor,
+    enumerable: false
+  } : typeof descriptor.reflect === "string" ? Object.assign({}, descriptor, reflect(descriptor.reflect.split("."))) : descriptor]).reduce((instance, [key, descriptor]) => Object.defineProperty(instance, key, Object.assign({
+    configurable: true
+  }, descriptor)), Object.assign(new constructor(), properties));
+
+
+
+  var _excluded = ["at"],
+    _excluded2 = ["at"];
+  var PipelineOperatorErrors = {
+    PipeBodyIsTighter: "Unexpected yield after pipeline body; any yield expression acting as Hack-style pipe body must be parenthesized due to its loose operator precedence.",
+    PipeTopicRequiresHackPipes: 'Topic reference is used, but the pipelineOperator plugin was not passed a "proposal": "hack" or "smart" option.',
+    PipeTopicUnbound: "Topic reference is unbound; it must be inside a pipe body.",
+    PipeTopicUnconfiguredToken: ({
+      token
+    }) => `Invalid topic token ${token}. In order to use ${token} as a topic reference, the pipelineOperator plugin must be configured with { "proposal": "hack", "topicToken": "${token}" }.`,
+    PipeTopicUnused: "Hack-style pipe body does not contain a topic reference; Hack-style pipes must use topic at least once.",
+    PipeUnparenthesizedBody: ({
+      type
+    }) => `Hack-style pipe body cannot be an unparenthesized ${toNodeDescription({
+    type
+  })}; please wrap it in parentheses.`,
+    PipelineBodyNoArrow: 'Unexpected arrow "=>" after pipeline body; arrow function in pipeline body must be parenthesized.',
+    PipelineBodySequenceExpression: "Pipeline body may not be a comma-separated sequence expression.",
+    PipelineHeadSequenceExpression: "Pipeline head should not be a comma-separated sequence expression.",
+    PipelineTopicUnused: "Pipeline is in topic style but does not use topic reference.",
+    PrimaryTopicNotAllowed: "Topic reference was used in a lexical context without topic binding.",
+    PrimaryTopicRequiresSmartPipeline: 'Topic reference is used, but the pipelineOperator plugin was not passed a "proposal": "hack" or "smart" option.'
+  };
+  var StrictModeErrors = {
+    StrictDelete: "Deleting local variable in strict mode.",
+    StrictEvalArguments: ({
+      referenceName
+    }) => `Assigning to '${referenceName}' in strict mode.`,
+    StrictEvalArgumentsBinding: ({
+      bindingName
+    }) => `Binding '${bindingName}' in strict mode.`,
+    StrictFunction: "In strict mode code, functions can only be declared at top level or inside a block.",
+    StrictNumericEscape: "The only valid numeric escape in strict mode is '\\0'.",
+    StrictOctalLiteral: "Legacy octal literals are not allowed in strict mode.",
+    StrictWith: "'with' in strict mode."
+  };
+  var StandardErrors = {
+    AccessorIsGenerator: ({
+      kind
+    }) => `A ${kind}ter cannot be a generator.`,
+    ArgumentsInClass: "'arguments' is only allowed in functions and class methods.",
+    AsyncFunctionInSingleStatementContext: "Async functions can only be declared at the top level or inside a block.",
+    AwaitBindingIdentifier: "Can not use 'await' as identifier inside an async function.",
+    AwaitBindingIdentifierInStaticBlock: "Can not use 'await' as identifier inside a static block.",
+    AwaitExpressionFormalParameter: "'await' is not allowed in async function parameters.",
+    AwaitUsingNotInAsyncContext: "'await using' is only allowed within async functions and at the top levels of modules.",
+    AwaitNotInAsyncContext: "'await' is only allowed within async functions and at the top levels of modules.",
+    AwaitNotInAsyncFunction: "'await' is only allowed within async functions.",
+    BadGetterArity: "A 'get' accessor must not have any formal parameters.",
+    BadSetterArity: "A 'set' accessor must have exactly one formal parameter.",
+    BadSetterRestParameter: "A 'set' accessor function argument must not be a rest parameter.",
+    ConstructorClassField: "Classes may not have a field named 'constructor'.",
+    ConstructorClassPrivateField: "Classes may not have a private field named '#constructor'.",
+    ConstructorIsAccessor: "Class constructor may not be an accessor.",
+    ConstructorIsAsync: "Constructor can't be an async function.",
+    ConstructorIsGenerator: "Constructor can't be a generator.",
+    DeclarationMissingInitializer: ({
+      kind
+    }) => `Missing initializer in ${kind} declaration.`,
+    DecoratorArgumentsOutsideParentheses: "Decorator arguments must be moved inside parentheses: use '@(decorator(args))' instead of '@(decorator)(args)'.",
+    DecoratorBeforeExport: "Decorators must be placed *before* the 'export' keyword. Remove the 'decoratorsBeforeExport: true' option to use the 'export @decorator class {}' syntax.",
+    DecoratorsBeforeAfterExport: "Decorators can be placed *either* before or after the 'export' keyword, but not in both locations at the same time.",
+    DecoratorConstructor: "Decorators can't be used with a constructor. Did you mean '@dec class { ... }'?",
+    DecoratorExportClass: "Decorators must be placed *after* the 'export' keyword. Remove the 'decoratorsBeforeExport: false' option to use the '@decorator export class {}' syntax.",
+    DecoratorSemicolon: "Decorators must not be followed by a semicolon.",
+    DecoratorStaticBlock: "Decorators can't be used with a static block.",
+    DeletePrivateField: "Deleting a private field is not allowed.",
+    DestructureNamedImport: "ES2015 named imports do not destructure. Use another statement for destructuring after the import.",
+    DuplicateConstructor: "Duplicate constructor in the same class.",
+    DuplicateDefaultExport: "Only one default export allowed per module.",
+    DuplicateExport: ({
+      exportName
+    }) => `\`${exportName}\` has already been exported. Exported identifiers must be unique.`,
+    DuplicateProto: "Redefinition of __proto__ property.",
+    DuplicateRegExpFlags: "Duplicate regular expression flag.",
+    ElementAfterRest: "Rest element must be last element.",
+    EscapedCharNotAnIdentifier: "Invalid Unicode escape.",
+    ExportBindingIsString: ({
+      localName,
+      exportName
+    }) => `A string literal cannot be used as an exported binding without \`from\`.\n- Did you mean \`export { '${localName}' as '${exportName}' } from 'some-module'\`?`,
+    ExportDefaultFromAsIdentifier: "'from' is not allowed as an identifier after 'export default'.",
+    ForInOfLoopInitializer: ({
+      type
+    }) => `'${type === "ForInStatement" ? "for-in" : "for-of"}' loop variable declaration may not have an initializer.`,
+    ForInUsing: "For-in loop may not start with 'using' declaration.",
+    ForOfAsync: "The left-hand side of a for-of loop may not be 'async'.",
+    ForOfLet: "The left-hand side of a for-of loop may not start with 'let'.",
+    GeneratorInSingleStatementContext: "Generators can only be declared at the top level or inside a block.",
+    IllegalBreakContinue: ({
+      type
+    }) => `Unsyntactic ${type === "BreakStatement" ? "break" : "continue"}.`,
+    IllegalLanguageModeDirective: "Illegal 'use strict' directive in function with non-simple parameter list.",
+    IllegalReturn: "'return' outside of function.",
+    ImportAttributesUseAssert: "The `assert` keyword in import attributes is deprecated and it has been replaced by the `with` keyword. You can enable the `deprecatedAssertSyntax: true` option in the import attributes plugin to suppress this error.",
+    ImportBindingIsString: ({
+      importName
+    }) => `A string literal cannot be used as an imported binding.\n- Did you mean \`import { "${importName}" as foo }\`?`,
+    ImportCallArgumentTrailingComma: "Trailing comma is disallowed inside import(...) arguments.",
+    ImportCallArity: ({
+      maxArgumentCount
+    }) => `\`import()\` requires exactly ${maxArgumentCount === 1 ? "one argument" : "one or two arguments"}.`,
+    ImportCallNotNewExpression: "Cannot use new with import(...).",
+    ImportCallSpreadArgument: "`...` is not allowed in `import()`.",
+    ImportJSONBindingNotDefault: "A JSON module can only be imported with `default`.",
+    ImportReflectionHasAssertion: "`import module x` cannot have assertions.",
+    ImportReflectionNotBinding: 'Only `import module x from "./module"` is valid.',
+    IncompatibleRegExpUVFlags: "The 'u' and 'v' regular expression flags cannot be enabled at the same time.",
+    InvalidBigIntLiteral: "Invalid BigIntLiteral.",
+    InvalidCodePoint: "Code point out of bounds.",
+    InvalidCoverInitializedName: "Invalid shorthand property initializer.",
+    InvalidDecimal: "Invalid decimal.",
+    InvalidDigit: ({
+      radix
+    }) => `Expected number in radix ${radix}.`,
+    InvalidEscapeSequence: "Bad character escape sequence.",
+    InvalidEscapeSequenceTemplate: "Invalid escape sequence in template.",
+    InvalidEscapedReservedWord: ({
+      reservedWord
+    }) => `Escape sequence in keyword ${reservedWord}.`,
+    InvalidIdentifier: ({
+      identifierName
+    }) => `Invalid identifier ${identifierName}.`,
+    InvalidLhs: ({
+      ancestor
+    }) => `Invalid left-hand side in ${toNodeDescription(ancestor)}.`,
+    InvalidLhsBinding: ({
+      ancestor
+    }) => `Binding invalid left-hand side in ${toNodeDescription(ancestor)}.`,
+    InvalidNumber: "Invalid number.",
+    InvalidOrMissingExponent: "Floating-point numbers require a valid exponent after the 'e'.",
+    InvalidOrUnexpectedToken: ({
+      unexpected
+    }) => `Unexpected character '${unexpected}'.`,
+    InvalidParenthesizedAssignment: "Invalid parenthesized assignment pattern.",
+    InvalidPrivateFieldResolution: ({
+      identifierName
+    }) => `Private name #${identifierName} is not defined.`,
+    InvalidPropertyBindingPattern: "Binding member expression.",
+    InvalidRecordProperty: "Only properties and spread elements are allowed in record definitions.",
+    InvalidRestAssignmentPattern: "Invalid rest operator's argument.",
+    LabelRedeclaration: ({
+      labelName
+    }) => `Label '${labelName}' is already declared.`,
+    LetInLexicalBinding: "'let' is not allowed to be used as a name in 'let' or 'const' declarations.",
+    LineTerminatorBeforeArrow: "No line break is allowed before '=>'.",
+    MalformedRegExpFlags: "Invalid regular expression flag.",
+    MissingClassName: "A class name is required.",
+    MissingEqInAssignment: "Only '=' operator can be used for specifying default value.",
+    MissingSemicolon: "Missing semicolon.",
+    MissingPlugin: ({
+      missingPlugin
+    }) => `This experimental syntax requires enabling the parser plugin: ${missingPlugin.map(name => JSON.stringify(name)).join(", ")}.`,
+    MissingOneOfPlugins: ({
+      missingPlugin
+    }) => `This experimental syntax requires enabling one of the following parser plugin(s): ${missingPlugin.map(name => JSON.stringify(name)).join(", ")}.`,
+    MissingUnicodeEscape: "Expecting Unicode escape sequence \\uXXXX.",
+    MixingCoalesceWithLogical: "Nullish coalescing operator(??) requires parens when mixing with logical operators.",
+    ModuleAttributeDifferentFromType: "The only accepted module attribute is `type`.",
+    ModuleAttributeInvalidValue: "Only string literals are allowed as module attribute values.",
+    ModuleAttributesWithDuplicateKeys: ({
+      key
+    }) => `Duplicate key "${key}" is not allowed in module attributes.`,
+    ModuleExportNameHasLoneSurrogate: ({
+      surrogateCharCode
+    }) => `An export name cannot include a lone surrogate, found '\\u${surrogateCharCode.toString(16)}'.`,
+    ModuleExportUndefined: ({
+      localName
+    }) => `Export '${localName}' is not defined.`,
+    MultipleDefaultsInSwitch: "Multiple default clauses.",
+    NewlineAfterThrow: "Illegal newline after throw.",
+    NoCatchOrFinally: "Missing catch or finally clause.",
+    NumberIdentifier: "Identifier directly after number.",
+    NumericSeparatorInEscapeSequence: "Numeric separators are not allowed inside unicode escape sequences or hex escape sequences.",
+    ObsoleteAwaitStar: "'await*' has been removed from the async functions proposal. Use Promise.all() instead.",
+    OptionalChainingNoNew: "Constructors in/after an Optional Chain are not allowed.",
+    OptionalChainingNoTemplate: "Tagged Template Literals are not allowed in optionalChain.",
+    OverrideOnConstructor: "'override' modifier cannot appear on a constructor declaration.",
+    ParamDupe: "Argument name clash.",
+    PatternHasAccessor: "Object pattern can't contain getter or setter.",
+    PatternHasMethod: "Object pattern can't contain methods.",
+    PrivateInExpectedIn: ({
+      identifierName
+    }) => `Private names are only allowed in property accesses (\`obj.#${identifierName}\`) or in \`in\` expressions (\`#${identifierName} in obj\`).`,
+    PrivateNameRedeclaration: ({
+      identifierName
+    }) => `Duplicate private name #${identifierName}.`,
+    RecordExpressionBarIncorrectEndSyntaxType: "Record expressions ending with '|}' are only allowed when the 'syntaxType' option of the 'recordAndTuple' plugin is set to 'bar'.",
+    RecordExpressionBarIncorrectStartSyntaxType: "Record expressions starting with '{|' are only allowed when the 'syntaxType' option of the 'recordAndTuple' plugin is set to 'bar'.",
+    RecordExpressionHashIncorrectStartSyntaxType: "Record expressions starting with '#{' are only allowed when the 'syntaxType' option of the 'recordAndTuple' plugin is set to 'hash'.",
+    RecordNoProto: "'__proto__' is not allowed in Record expressions.",
+    RestTrailingComma: "Unexpected trailing comma after rest element.",
+    SloppyFunction: "In non-strict mode code, functions can only be declared at top level or inside a block.",
+    SloppyFunctionAnnexB: "In non-strict mode code, functions can only be declared at top level, inside a block, or as the body of an if statement.",
+    StaticPrototype: "Classes may not have static property named prototype.",
+    SuperNotAllowed: "`super()` is only valid inside a class constructor of a subclass. Maybe a typo in the method name ('constructor') or not extending another class?",
+    SuperPrivateField: "Private fields can't be accessed on super.",
+    TrailingDecorator: "Decorators must be attached to a class element.",
+    TupleExpressionBarIncorrectEndSyntaxType: "Tuple expressions ending with '|]' are only allowed when the 'syntaxType' option of the 'recordAndTuple' plugin is set to 'bar'.",
+    TupleExpressionBarIncorrectStartSyntaxType: "Tuple expressions starting with '[|' are only allowed when the 'syntaxType' option of the 'recordAndTuple' plugin is set to 'bar'.",
+    TupleExpressionHashIncorrectStartSyntaxType: "Tuple expressions starting with '#[' are only allowed when the 'syntaxType' option of the 'recordAndTuple' plugin is set to 'hash'.",
+    UnexpectedArgumentPlaceholder: "Unexpected argument placeholder.",
+    UnexpectedAwaitAfterPipelineBody: 'Unexpected "await" after pipeline body; await must have parentheses in minimal proposal.',
+    UnexpectedDigitAfterHash: "Unexpected digit after hash token.",
+    UnexpectedImportExport: "'import' and 'export' may only appear at the top level.",
+    UnexpectedKeyword: ({
+      keyword
+    }) => `Unexpected keyword '${keyword}'.`,
+    UnexpectedLeadingDecorator: "Leading decorators must be attached to a class declaration.",
+    UnexpectedLexicalDeclaration: "Lexical declaration cannot appear in a single-statement context.",
+    UnexpectedNewTarget: "`new.target` can only be used in functions or class properties.",
+    UnexpectedNumericSeparator: "A numeric separator is only allowed between two digits.",
+    UnexpectedPrivateField: "Unexpected private name.",
+    UnexpectedReservedWord: ({
+      reservedWord
+    }) => `Unexpected reserved word '${reservedWord}'.`,
+    UnexpectedSuper: "'super' is only allowed in object methods and classes.",
+    UnexpectedToken: ({
+      expected,
+      unexpected
+    }) => `Unexpected token${unexpected ? ` '${unexpected}'.` : ""}${expected ? `, expected "${expected}"` : ""}`,
+    UnexpectedTokenUnaryExponentiation: "Illegal expression. Wrap left hand side or entire exponentiation in parentheses.",
+    UnexpectedUsingDeclaration: "Using declaration cannot appear in the top level when source type is `script`.",
+    UnsupportedBind: "Binding should be performed on object property.",
+    UnsupportedDecoratorExport: "A decorated export must export a class declaration.",
+    UnsupportedDefaultExport: "Only expressions, functions or classes are allowed as the `default` export.",
+    UnsupportedImport: "`import` can only be used in `import()` or `import.meta`.",
+    UnsupportedMetaProperty: ({
+      target,
+      onlyValidPropertyName
+    }) => `The only valid meta property for ${target} is ${target}.${onlyValidPropertyName}.`,
+    UnsupportedParameterDecorator: "Decorators cannot be used to decorate parameters.",
+    UnsupportedPropertyDecorator: "Decorators cannot be used to decorate object literal properties.",
+    UnsupportedSuper: "'super' can only be used with function calls (i.e. super()) or in property accesses (i.e. super.prop or super[prop]).",
+    UnterminatedComment: "Unterminated comment.",
+    UnterminatedRegExp: "Unterminated regular expression.",
+    UnterminatedString: "Unterminated string constant.",
+    UnterminatedTemplate: "Unterminated template.",
+    UsingDeclarationHasBindingPattern: "Using declaration cannot have destructuring patterns.",
+    VarRedeclaration: ({
+      identifierName
+    }) => `Identifier '${identifierName}' has already been declared.`,
+    YieldBindingIdentifier: "Can not use 'yield' as identifier inside a generator.",
+    YieldInParameter: "Yield expression is not allowed in formal parameters.",
+    ZeroDigitNumericSeparator: "Numeric separator can not be used after leading 0."
+  };
+  var _excluded$1 = ["toMessage"],
+    _excluded2$1 = ["message"];
+  var ParseErrorCode = {
+    SyntaxError: "BABEL_PARSER_SYNTAX_ERROR",
+    SourceTypeModuleError: "BABEL_PARSER_SOURCETYPE_MODULE_REQUIRED"
+  };
+  var ModuleErrors = {
+    ImportMetaOutsideModule: {
+      message: `import.meta may appear only with 'sourceType: "module"'`,
+      code: ParseErrorCode.SourceTypeModuleError
+    },
+    ImportOutsideModule: {
+      message: `'import' and 'export' may appear only with 'sourceType: "module"'`,
+      code: ParseErrorCode.SourceTypeModuleError
+    }
+  };
+  function toParseErrorConstructor(_ref) {
+    let {
+      toMessage
+    } = _ref,
+      properties = _objectWithoutPropertiesLoose(_ref, _excluded$1);
+    return function constructor({
+      loc,
+      details
+    }) {
+      return instantiate(SyntaxError, Object.assign({}, properties, {
+        loc
+      }), {
+        clone(overrides = {}) {
+          const loc = overrides.loc || {};
+          return constructor({
+            loc: new Position("line" in loc ? loc.line : this.loc.line, "column" in loc ? loc.column : this.loc.column, "index" in loc ? loc.index : this.loc.index),
+            details: Object.assign({}, this.details, overrides.details)
+          });
+        },
+        details: {
+          value: details,
+          enumerable: false
+        },
+        message: {
+          get() {
+            return `${toMessage(this.details)} (${this.loc.line}:${this.loc.column})`;
+          },
+          set(value) {
+            Object.defineProperty(this, "message", {
+              value
+            });
+          }
+        },
+        pos: {
+          reflect: "loc.index",
+          enumerable: true
+        },
+        missingPlugin: "missingPlugin" in details && {
+          reflect: "details.missingPlugin",
+          enumerable: true
+        }
+      });
+    };
+  }
+  function _objectWithoutPropertiesLoose(source, excluded) {
+    if (source == null) return {};
+    var target = {};
+    var sourceKeys = Object.keys(source);
+    var key, i;
+    for (i = 0; i < sourceKeys.length; i++) {
+      key = sourceKeys[i];
+      if (excluded.indexOf(key) >= 0) continue;
+      target[key] = source[key];
+    }
+    return target;
+  }
+  const Errors = Object.assign({}, ParseErrorEnum(ModuleErrors), ParseErrorEnum(StandardErrors), ParseErrorEnum(StrictModeErrors), ParseErrorEnum`pipelineOperator`(PipelineOperatorErrors));
+  const lineBreak = /\r\n?|[\n\u2028\u2029]/;
+  const keywords = new Set(reservedWords.keyword);
   const tokenPrefixes = [];
+  function ParseErrorEnum(argument, syntaxPlugin) {
+    if (Array.isArray(argument)) {
+      return parseErrorTemplates => ParseErrorEnum(parseErrorTemplates, argument[0]);
+    }
+    const ParseErrorConstructors = {};
+    for (const reasonCode of Object.keys(argument)) {
+      const template = argument[reasonCode];
+      const _ref2 = typeof template === "string" ? {
+        message: () => template
+      } : typeof template === "function" ? {
+        message: template
+      } : template,
+        {
+          message
+        } = _ref2,
+        rest = _objectWithoutPropertiesLoose(_ref2, _excluded2$1);
+      const toMessage = typeof message === "string" ? () => message : message;
+      ParseErrorConstructors[reasonCode] = toParseErrorConstructor(Object.assign({
+        code: ParseErrorCode.SyntaxError,
+        reasonCode,
+        toMessage
+      }, syntaxPlugin ? {
+        syntaxPlugin
+      } : {}, rest));
+    }
+    return ParseErrorConstructors;
+  }
   function tokenIsIdentifier(token) {
     return token >= 93 && token <= 130;
   }
+  function tokenIsTemplate(token) {
+    return token >= 24 && token <= 25;
+  }
+  function tokenIsOperator(token) {
+    return token >= 39 && token <= 59;
+  }
   function tokenIsPrefix(token) {
     return tokenPrefixes[token];
+  }
+  function tokenIsKeywordOrIdentifier(token) {
+    return token >= 58 && token <= 130;
+  }
+  function tokenKeywordOrIdentifierIsKeyword(token) {
+    return token <= 92;
+  }
+  function isKeyword(word) {
+    return keywords.has(word);
+  }
+  function tokenIsKeyword(token) {
+    return token >= 58 && token <= 92;
+  }
+  function tokenIsPostfix(token) {
+    return token === 34;
+  }
+  function tokenIsAssignment(token) {
+    return token >= 29 && token <= 33;
+  }
+  // 是否是保留字
+  const reservedWordLikeSet = new Set(["break", "case", "catch", "continue", "default", "do", "else", "finally", "for", "function", "if", "return", "switch", "throw", "try", "var", "const", "while", "with", "new", "this", "super", "class", "extends", "export", "import", "null", "true", "false", "in", "instanceof", "typeof", "void", "delete", "implements", "interface", "let", "package", "private", "protected", "public", "static", "yield", "eval", "arguments", "enum", "await"]);
+  function canBeReservedWord(word) {
+    return reservedWordLikeSet.has(word);
+  }
+  function isReservedWord(word, inModule) {
+    return inModule && word === "await" || word === "enum";
   }
   class ExpressionErrors {
     constructor() {
@@ -300,7 +702,7 @@
       return (flags & 64) > 0 && (flags & 2) === 0;
     }
     get inStaticBlock() {
-      for (let i = this.scopeStack.length - 1;; i--) {
+      for (let i = this.scopeStack.length - 1; ; i--) {
         const {
           flags
         } = this.scopeStack[i];
@@ -402,7 +804,7 @@
       return this.scopeStack[this.scopeStack.length - 1];
     }
     currentVarScopeFlags() {
-      for (let i = this.scopeStack.length - 1;; i--) {
+      for (let i = this.scopeStack.length - 1; ; i--) {
         const {
           flags
         } = this.scopeStack[i];
@@ -412,7 +814,7 @@
       }
     }
     currentThisScopeFlags() {
-      for (let i = this.scopeStack.length - 1;; i--) {
+      for (let i = this.scopeStack.length - 1; ; i--) {
         const {
           flags
         } = this.scopeStack[i];
@@ -731,7 +1133,7 @@
        * this.sawUnambiguousESM = false;
        * this.ambiguousScriptDifferentAst = false;
        */
-      
+
       super(); // 获取BaseParser的配置
       this.isLookahead = void 0;
       this.tokens = [];
@@ -789,6 +1191,7 @@
       ++this.state.tokensLength;
     }
     next() {
+      // 用于检查并处理可能的关键字逃逸（keyword escapes）
       this.checkKeywordEscapes();
       if (this.options.tokens) {
         this.pushToken(new Token(this.state));
@@ -949,7 +1352,7 @@
       if (this.options.tokens) this.pushToken(comment);
       return comment;
     }
-    
+
     // 跳过空格
     skipSpace() {
       const spaceStart = this.state.pos;
@@ -986,10 +1389,10 @@
             ++this.state.curLine; // 加一行
             this.state.lineStart = this.state.pos;
             break;
-            /**
-             * 47，它对应的字符是正斜杠（Slash），一般用于表示路径或者分隔符
-             * 42，它对应的字符是星号（Asterisk），常用于表示通配符或者乘法运算中的乘号
-             */
+          /**
+           * 47，它对应的字符是正斜杠（Slash），一般用于表示路径或者分隔符
+           * 42，它对应的字符是星号（Asterisk），常用于表示通配符或者乘法运算中的乘号
+           */
           case 47:
             switch (this.input.charCodeAt(this.state.pos + 1)) {
               case 42:
@@ -1474,7 +1877,7 @@
       let {
         pos
       } = this.state;
-      for (;; ++pos) {
+      for (; ; ++pos) {
         if (pos >= this.length) {
           throw this.raise(Errors.UnterminatedRegExp, {
             at: createPositionWithColumnOffset(startLoc, 1)
@@ -1793,8 +2196,8 @@
     }
     raise(toParseError, raiseProperties) {
       const {
-          at
-        } = raiseProperties,
+        at
+      } = raiseProperties,
         details = _objectWithoutPropertiesLoose(raiseProperties, _excluded);
       const loc = at instanceof Position ? at : at.loc.start;
       const error = toParseError({
@@ -1807,8 +2210,8 @@
     }
     raiseOverwrite(toParseError, raiseProperties) {
       const {
-          at
-        } = raiseProperties,
+        at
+      } = raiseProperties,
         details = _objectWithoutPropertiesLoose(raiseProperties, _excluded2);
       const loc = at instanceof Position ? at : at.loc.start;
       const pos = loc.index;
@@ -1825,7 +2228,7 @@
       }
       return this.raise(toParseError, raiseProperties);
     }
-    updateContext(prevType) {}
+    updateContext(prevType) { }
     unexpected(loc, type) {
       throw this.raise(Errors.UnexpectedToken, {
         expected: type ? tokenLabelName(type) : null,
@@ -2086,7 +2489,7 @@
     enterInitialScopes() {
       let paramFlags = PARAM;
       // is in ES Moduless是否在Esmodules中
-   
+
       if (this.inModule) {
         paramFlags |= PARAM_AWAIT;
       }
@@ -2611,6 +3014,7 @@
       if (disallowIn) {
         return this.disallowInAnd(() => this.parseExpressionBase(refExpressionErrors));
       }
+      // 解析基础表达式
       const refExpression = this.parseExpressionBase(refExpressionErrors);
       const cb = () => refExpression;
       const res = this.allowInAnd(cb);
@@ -2619,6 +3023,11 @@
     }
     parseExpressionBase(refExpressionErrors) {
       const startLoc = this.state.startLoc;
+      /**
+       * 解析可能包含赋值的表达式的方法
+       * x = y + 1
+       * refExpressionErrors: 是否引入错误表达式
+       */
       const expr = this.parseMaybeAssign(refExpressionErrors);
       if (this.match(12)) {
         const node = this.startNodeAt(startLoc);
@@ -2643,6 +3052,7 @@
     }
     parseMaybeAssign(refExpressionErrors, afterLeftParse) {
       const startLoc = this.state.startLoc;
+      // 是否有关键字await、yield、let等
       if (this.isContextual(106)) {
         if (this.prodParam.hasYield) {
           let left = this.parseYield();
@@ -2653,6 +3063,14 @@
         }
       }
       // 获取错误表达式
+      /**
+       * refExpressionErrors： {
+       *  doubleProtoLoc: null,
+       *  optionalParametersLoc: null,
+       *  privateKeyLoc: null,
+       *  shorthandAssignLoc: null,
+       * }
+       */
       let ownExpressionErrors;
       if (refExpressionErrors) {
         ownExpressionErrors = false;
@@ -2660,12 +3078,12 @@
         refExpressionErrors = new ExpressionErrors();
         ownExpressionErrors = true;
       }
-      const {
-        type
-      } = this.state;
+      const { type } = this.state;
+      // tokenIsIdentifier是否是标识符 const let var
       if (type === 10 || tokenIsIdentifier(type)) {
         this.state.potentialArrowAt = this.state.start;
       }
+      // 获取左边变量
       let left = this.parseMaybeConditional(refExpressionErrors);
       if (afterLeftParse) {
         left = afterLeftParse.call(this, left, startLoc);
@@ -2705,6 +3123,7 @@
     parseMaybeConditional(refExpressionErrors) {
       const startLoc = this.state.startLoc;
       const potentialArrowAt = this.state.potentialArrowAt;
+      // 用于解析表达式的操作符部分
       const expr = this.parseExprOps(refExpressionErrors);
       if (this.shouldExitDescending(expr, potentialArrowAt)) {
         return expr;
@@ -2724,8 +3143,10 @@
     }
     parseMaybeUnaryOrPrivate(refExpressionErrors) {
       let status = this.match(136);
+      // 私有成员 ： 一元操作符
       return status ? this.parsePrivateName() : this.parseMaybeUnary(refExpressionErrors);
     }
+    // 用于解析可能出现的一元操作符或私有成员的部分#privateMember
     parseExprOps(refExpressionErrors) {
       const startLoc = this.state.startLoc;
       const potentialArrowAt = this.state.potentialArrowAt;
@@ -2858,9 +3279,10 @@
       }
       const update = this.match(34);
       const node = this.startNode();
-      debugger
+      // 用于检查词法标记（token）是否为前缀操作符的方法。例如负号 (-) 或逻辑非 (!)
+      // token: []
       if (tokenIsPrefix(this.state.type)) {
-    
+
         node.operator = this.state.value;
         node.prefix = true;
         if (this.match(72)) {
@@ -2889,7 +3311,12 @@
           return this.finishNode(node, "UnaryExpression");
         }
       }
-      debugger
+      /**
+       * 用于解析和处理更新表达式
+       * node：表示要解析的 AST（抽象语法树）节点
+       * update：表示更新操作符的信息，通常包括操作符的类型和操作数。
+       * refExpressionErrors：在解析过程中收集引用表达式错误的容器，可以将错误信息添加到其中。
+       */
       const expr = this.parseUpdate(node, update, refExpressionErrors);
       if (isAwait) {
         const {
@@ -2914,6 +3341,7 @@
         return node;
       }
       const startLoc = this.state.startLoc;
+      // 解析处理脚本
       let expr = this.parseExprSubscripts(refExpressionErrors);
       if (this.checkExpressionErrors(refExpressionErrors, false)) return expr;
       while (tokenIsPostfix(this.state.type) && !this.canInsertSemicolon()) {
@@ -2931,6 +3359,7 @@
     parseExprSubscripts(refExpressionErrors) {
       const startLoc = this.state.startLoc;
       const potentialArrowAt = this.state.potentialArrowAt;
+      // 解析更小原子部分
       const expr = this.parseExprAtom(refExpressionErrors);
       if (this.shouldExitDescending(expr, potentialArrowAt)) {
         return expr;
@@ -4104,6 +4533,7 @@
           this.replaceToken(130);
         }
       } else {
+        // 处理关键字
         this.checkReservedWord(name, startLoc, tokenIsKeyword, false);
       }
       this.next();
@@ -4372,13 +4802,13 @@
       }
       return this.finishNode(node, "ModuleExpression");
     }
-    parsePropertyNamePrefixOperator(prop) {}
+    parsePropertyNamePrefixOperator(prop) { }
   }
 
   // 语法分析
   class StatementParser extends ExpressionParser {
     parseTopLevel(file, program) {
-
+      // 解析program
       file.program = this.parseProgram(program);
       file.comments = this.state.comments;
       if (this.options.tokens) {
@@ -4491,7 +4921,16 @@
       }
       return false;
     }
+    /**
+     * 解析模块
+     * 1：解析普通语句（normal statements）
+     * 2：解析模块级别的语句（module-level statements）
+     * 3：解析函数级别的语句（function-level statements）
+     * 4：解析类级别的语句（class-level statements）
+     * (1 | 2)  ( 1| 4)
+     */
     parseModuleItem() {
+      // 都解析
       return this.parseStatementLike(1 | 2 | 4 | 8);
     }
     parseStatementListItem() {
@@ -4656,7 +5095,6 @@
           {
             // 是否是同步函数
             if (this.isAsyncFunction()) {
-              debugger
               if (!allowDeclaration) {
                 this.raise(Errors.AsyncFunctionInSingleStatementContext, {
                   at: this.state.startLoc
@@ -4667,7 +5105,6 @@
             }
           }
       }
-
       const maybeName = this.state.value;
       // 获取表达式
       const expr = this.parseExpression();
@@ -5112,6 +5549,7 @@
     isValidDirective(stmt) {
       return stmt.type === "ExpressionStatement" && stmt.expression.type === "StringLiteral" && !stmt.expression.extra.parenthesized;
     }
+    // 添加body与directives属性
     parseBlockBody(node, allowDirectives, topLevel, end, afterBlockParse) {
       // 给node添加body属性及directives属性
       const body = node.body = [];
@@ -5124,9 +5562,9 @@
       const oldStrict = this.state.strict;
       let hasStrictModeDirective = false;
       let parsedNonDirective = false;
-
       // 是否是结束type
       while (!this.match(end)) {
+        // 是不是文件顶级的部分
         const stmt = topLevel ? this.parseModuleItem() : this.parseStatementListItem();
         if (directives && !parsedNonDirective) {
           if (this.isValidDirective(stmt)) {
@@ -6333,6 +6771,11 @@
       // Tokenizer拿到了第一个字符
       this.nextToken();
       file.errors = null;
+      /**
+       * 解析顶级语法
+       * file 源文件
+       * program code
+       */
       this.parseTopLevel(file, program);
       // file.errors = this.state.errors;
       // return file;

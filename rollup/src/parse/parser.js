@@ -62,6 +62,11 @@ class Parser extends StatementParser {
     // Tokenizer拿到了第一个字符
     this.nextToken();
     file.errors = null;
+    /**
+     * 解析顶级语法
+     * file 源文件
+     * program code
+     */
     this.parseTopLevel(file, program);
     // file.errors = this.state.errors;
     // return file;
